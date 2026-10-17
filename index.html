@@ -120,9 +120,7 @@ let journeys=[
 {name:'Home > UPM > MRT KL > Home',dist:19.6,toll:0,park:4.5,mrt:6.6,isMrt:true},
 ];
 async function apiFetch(doc,method,body){
-const code=localStorage.getItem('accessCode');
-if(!code)return null;
-const r=await fetch('/api/data?doc='+doc,{method:method||'GET',headers:{'x-access-code':code,'content-type':'application/json'},body:body?JSON.stringify(body):undefined});
+const r=await fetch('/api/data?doc='+doc,{method:method||'GET',headers:{'content-type':'application/json'},body:body?JSON.stringify(body):undefined});
 if(!r.ok)return null;
 return r.json().catch(()=>null);
 }
