@@ -528,8 +528,9 @@ import { createAuthClient } from 'https://esm.sh/@neondatabase/auth';
 const AUTH_URL = 'https://ep-solitary-hill-b5myv36j.neonauth.c-7.us-east-2.aws.neon.tech/neondb/auth';
 const auth = createAuthClient(AUTH_URL);
 const $ = id => document.getElementById(id);
+function say(msg){ $('authStatus').textContent = msg; }
 function show(signed, email){
-  $('authStatus').textContent = signed ? 'Signed in as ' + email : 'Not signed in';
+  say(signed ? 'Signed in as ' + email : 'Not signed in');
   ['authIn','authUp','authEmail','authPass'].forEach(id => $(id).classList.toggle('hidden', signed));
   $('authOut').classList.toggle('hidden', !signed);
 }
@@ -538,19 +539,29 @@ window.getAuthToken = async () => {
   return r?.data?.token ?? null;
 };
 async function refresh(){
-  const s = await auth.getSession();
-  const u = s?.data?.user;
-  show(!!u, u?.email);
-  if (u) window.dispatchEvent(new Event('signedin'));
+  try {
+    const s = await auth.getSession();
+    const u = s?.data?.user;
+    show(!!u, u?.email);
+    if (u) window.dispatchEvent(new Event('signedin'));
+  } catch (e) { show(false); }
 }
 async function go(fn){
-  const r = await fn();
-  if (r?.error) { $('authStatus').textContent = r.error.message || 'Something went wrong'; return; }
-  await refresh();
+  const email = $('authEmail').value.trim();
+  const password = $('authPass').value;
+  if (!email || !password) { say('Type your email and password first'); return; }
+  say('Working…');
+  try {
+    const r = await fn(email, password);
+    if (r?.error) { say(r.error.message || 'Could not sign in'); return; }
+    await refresh();
+  } catch (e) {
+    say(e?.message || 'Could not sign in');
+  }
 }
-$('authIn').onclick = () => go(() => auth.signIn.email({ email: $('authEmail').value, password: $('authPass').value }));
-$('authUp').onclick = () => go(() => auth.signUp.email({ email: $('authEmail').value, password: $('authPass').value, name: $('authEmail').value.split('@')[0] }));
-$('authOut').onclick = async () => { await auth.signOut(); show(false); };
+$('authIn').onclick = () => go((email, password) => auth.signIn.email({ email, password }));
+$('authUp').onclick = () => go((email, password) => auth.signUp.email({ email, password, name: email.split('@')[0] }));
+$('authOut').onclick = async () => { try { await auth.signOut(); } catch (e) {} show(false); };
 refresh();
 </script>
 </body>
