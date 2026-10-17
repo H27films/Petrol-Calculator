@@ -519,26 +519,8 @@ paintCar();
 recalc();
 </script>
 <script>
-const $=id=>document.getElementById(id);
-function unlockUI(ok,msg){
-  $('authStatus').textContent=msg;
-  $('authPass').classList.toggle('hidden',ok);
-  $('authIn').textContent=ok?'Lock':'Unlock';
-}
-async function checkCode(){
-  const r=await fetch('/api/data?doc=journeys',{headers:{'x-access-code':localStorage.getItem('accessCode')||''}});
-  if(r.ok){unlockUI(true,'Unlocked');window.dispatchEvent(new Event('signedin'));}
-  else{localStorage.removeItem('accessCode');unlockUI(false,'Wrong access code');}
-}
-$('authIn').onclick=()=>{
-  if($('authIn').textContent==='Lock'){localStorage.removeItem('accessCode');unlockUI(false,'Locked');return;}
-  const code=$('authPass').value.trim();
-  if(!code){$('authStatus').textContent='Type your access code';return;}
-  localStorage.setItem('accessCode',code);
-  checkCode();
-};
-if(localStorage.getItem('accessCode'))checkCode();
-else unlockUI(false,'Enter access code');
+document.getElementById('authBar').classList.add('hidden');
+window.dispatchEvent(new Event('signedin'));
 </script>
 </body>
 </html>
