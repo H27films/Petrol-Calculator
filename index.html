@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Petrol Dashboard - Fixed</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+<style>body{font-family:'Inter',sans-serif;background:#efe9e1}.fraunces{font-family:'Fraunces',serif}.soft-shadow{box-shadow:0 20px 60px rgba(0,0,0,0.08)}.no-spin::-webkit-outer-spin-button,.no-spin::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}.no-spin{-moz-appearance:textfield}.tip{opacity:0;transition:opacity .15s}.pt:hover .tip{opacity:1}#moreBody tr{background-color:#ececef!important;color:#18181b}#moreBody tr:hover{background-color:#e0e0e4!important}#moreBody tr td{border-color:#d4d4d8}</style>
+</head>
+<body class="p-3 md:p-8">
+<div id="authBar" class="max-w-6xl mx-auto mb-3 flex flex-wrap items-center gap-2 text-xs">
+<span id="authStatus" class="text-stone-500 mr-2">Not signed in</span>
+<input id="authEmail" type="email" placeholder="Email" class="rounded-full border px-3 py-1.5 bg-white">
+<input id="authPass" type="password" placeholder="Password" class="rounded-full border px-3 py-1.5 bg-white">
+<button id="authIn" class="bg-black text-white rounded-full px-4 py-1.5">Sign in</button>
+<button id="authUp" class="bg-white border rounded-full px-4 py-1.5">Create account</button>
+<button id="authOut" class="hidden bg-white border rounded-full px-4 py-1.5">Sign out</button>
+</div>
+<div id="stickyBar" class="hidden fixed top-0 inset-x-0 z-50 px-3 md:px-8 pt-2">
+<div class="max-w-6xl mx-auto bg-[#fdfcf9]/95 backdrop-blur border border-[#e8ddd0] rounded-[20px] shadow-lg px-5 py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs">
+<div class="flex items-center gap-2"><span class="text-[10px] uppercase tracking-widest text-stone-400">Fuel RM/L</span><input id="sFuel" type="number" step="0.10" class="no-spin w-16 bg-transparent font-semibold focus:outline-none"></div>
+<div class="flex items-center gap-2"><span class="text-[10px] uppercase tracking-widest text-stone-400">Merc L/100</span><input id="sMercL" type="number" step="0.1" class="no-spin w-14 bg-transparent font-semibold focus:outline-none"><span class="bg-[#111] text-white px-2 py-0.5 rounded-full">RM<span id="sMCPK">0.00</span>/km</span></div>
+<div class="flex items-center gap-2"><span class="text-[10px] uppercase tracking-widest text-stone-400">Fortuner L/100</span><input id="sFortL" type="number" step="0.1" class="no-spin w-14 bg-transparent font-semibold focus:outline-none"><span class="bg-[#2b2a28] text-white px-2 py-0.5 rounded-full">RM<span id="sFCPK">0.00</span>/km</span></div>
+</div></div>
+<div class="max-w-6xl mx-auto space-y-6">
+
+<div class="bg-[#fdfcf9] rounded-[32px] soft-shadow border border-[#e8ddd0] p-8">
+<div class="flex justify-between"><div><div class="text-[10px] tracking-[0.3em] text-stone-400 uppercase">Calculator</div><h1 class="fraunces text-4xl font-semibold mt-1">Petrol<br>Dashboard</h1></div><div class="text-xs text-stone-400">Cost/km = L/100km × Price ÷ 100</div></div>
+
+<div id="topCards" class="grid md:grid-cols-3 gap-5 mt-8">
+<div class="bg-[#f6f1eb] rounded-[24px] p-6 border">
+<div class="text-[10px] uppercase text-stone-400 tracking-widest">Price Petrol RM/L</div>
+<div class="flex items-center gap-2 mt-3">
+<input id="fuel" type="number" step="0.10" value="4.64" class="no-spin fraunces text-4xl font-semibold bg-transparent w-28 focus:outline-none">
+<div class="flex flex-col gap-1"><button data-t="fuel" data-d="0.10" class="sb w-7 h-7 rounded-full bg-white border grid place-items-center text-xs">▲</button><button data-t="fuel" data-d="-0.10" class="sb w-7 h-7 rounded-full bg-white border grid place-items-center text-xs">▼</button></div>
+</div>
+</div>
+<div class="bg-[#111] rounded-[24px] p-6 text-white">
+<div class="flex justify-between"><span class="text-[10px] uppercase text-zinc-400">Mercedes L/100KM</span><span class="text-xs bg-zinc-800 px-3 py-1 rounded-full">RM <span id="mCPK2">0.56</span>/km</span></div>
+<div class="flex items-center gap-2 mt-3">
+<input id="mercL" type="number" step="0.1" value="12" class="no-spin fraunces text-4xl font-semibold bg-transparent w-20 text-white focus:outline-none">
+<div class="flex flex-col gap-1"><button data-t="mercL" data-d="0.1" class="sb w-7 h-7 rounded-full bg-zinc-800 grid place-items-center text-xs">▲</button><button data-t="mercL" data-d="-0.1" class="sb w-7 h-7 rounded-full bg-zinc-800 grid place-items-center text-xs">▼</button></div>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-4 text-xs"><div class="bg-zinc-900 rounded-xl p-3"><div class="text-zinc-500">KM/RM</div><div id="mKPR" class="text-lg font-semibold">1.80</div></div><div class="bg-zinc-900 rounded-xl p-3"><div class="text-zinc-500">Per 100RM</div><div id="m100" class="text-lg font-semibold">179.6 km</div></div></div>
+</div>
+<div class="bg-[#2b2a28] rounded-[24px] p-6 text-white border border-[#3a3936]">
+<div class="flex justify-between"><span class="text-[10px] uppercase text-[#a8a6a1]">Fortuner L/100KM</span><span class="text-xs bg-[#1f1e1c] border px-3 py-1 rounded-full">RM <span id="fCPK2">0.70</span>/km</span></div>
+<div class="flex items-center gap-2 mt-3">
+<input id="fortL" type="number" step="0.1" value="15" class="no-spin fraunces text-4xl font-semibold bg-transparent w-20 text-white focus:outline-none">
+<div class="flex flex-col gap-1"><button data-t="fortL" data-d="0.1" class="sb w-7 h-7 rounded-full bg-[#3d3c39] grid place-items-center text-xs">▲</button><button data-t="fortL" data-d="-0.1" class="sb w-7 h-7 rounded-full bg-[#3d3c39] grid place-items-center text-xs">▼</button></div>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-4 text-xs"><div class="bg-[#1f1e1c] rounded-xl p-3 border border-[#3a3936]"><div class="text-[#8a8885]">KM/RM</div><div id="fKPR" class="text-lg font-semibold">1.44</div></div><div class="bg-[#1f1e1c] rounded-xl p-3 border border-[#3a3936]"><div class="text-[#8a8885]">Per 100RM</div><div id="f100" class="text-lg font-semibold">143.7 km</div></div></div>
+</div>
+</div>
+
+<div class="mt-10">
+<div class="flex justify-between"><h3 class="text-[11px] tracking-widest uppercase text-stone-400">Cost from Home (Country Heights Kajang)</h3><span id="chartLabel" class="text-xs">Mercedes @ RM4.64</span></div>
+<svg viewBox="0 0 600 180" class="w-full h-auto mt-4 overflow-visible">
+<defs><linearGradient id="grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e9a082" stop-opacity="0.8"/><stop offset="100%" stop-color="#e9a082" stop-opacity="0.05"/></linearGradient><linearGradient id="grad2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#111" stop-opacity="0.35"/><stop offset="100%" stop-color="#111" stop-opacity="0.03"/></linearGradient></defs>
+<path id="fill2" fill="url(#grad2)"/><path id="line2" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path id="fill" fill="url(#grad)"/><path id="line" fill="none" stroke="#e9a082" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><g id="dots"></g>
+</svg>
+<div class="grid grid-cols-6 text-[11px] text-center uppercase tracking-widest text-stone-500 mt-2"><div>Home<br><b id="cH" class="text-black">0/0</b></div><div>Bangsar<br><b id="cB" class="text-black"></b></div><div>KLCC<br><b id="cK" class="text-black"></b></div><div>MK<br><b id="cM" class="text-black"></b></div><div>Kajang<br><b id="cKj" class="text-black"></b></div><div>Nur Yadi<br><b id="cN" class="text-black"></b></div></div>
+</div>
+
+<div class="mt-8 bg-[#111] rounded-[24px] p-6 text-white">
+<div class="flex justify-between items-center flex-wrap gap-2"><div class="flex items-center gap-2"><h3 class="text-[11px] uppercase text-zinc-400">Quick Calculator</h3><select id="qCar" data-dark class="bg-zinc-800 rounded-full px-3 py-1 text-xs"><option value="merc">Mercedes</option><option value="fort">Fortuner</option></select></div><div class="flex bg-zinc-900 rounded-full p-1"><button id="qSingle" class="px-4 py-1 rounded-full bg-white text-black text-xs font-semibold">Single</button><button id="qReturn" class="px-4 py-1 rounded-full text-zinc-400 text-xs">Return x2</button></div></div>
+<div class="grid md:grid-cols-5 gap-3 mt-4"><div><label class="text-[10px] text-zinc-500">Distance</label><div class="flex items-center gap-1 mt-1"><div class="relative flex-1 min-w-0"><input id="qDist" type="number" value="30" class="no-spin w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 pr-8 text-sm"><span class="absolute right-3 top-3 text-xs text-zinc-500">km</span></div><div class="flex flex-col gap-1"><button data-t="qDist" data-d="1" data-p="0" class="sb w-6 h-6 rounded-full bg-zinc-800 grid place-items-center text-[10px]">▲</button><button data-t="qDist" data-d="-1" data-p="0" class="sb w-6 h-6 rounded-full bg-zinc-800 grid place-items-center text-[10px]">▼</button></div></div></div><div><label class="text-[10px] text-zinc-500">Toll</label><div class="flex items-center gap-1 mt-1"><input id="qToll" type="number" step="0.10" value="0.88" class="no-spin flex-1 min-w-0 bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm"><div class="flex flex-col gap-1"><button data-t="qToll" data-d="0.10" data-p="2" class="sb w-6 h-6 rounded-full bg-zinc-800 grid place-items-center text-[10px]">▲</button><button data-t="qToll" data-d="-0.10" data-p="2" class="sb w-6 h-6 rounded-full bg-zinc-800 grid place-items-center text-[10px]">▼</button></div></div></div><div><label class="text-[10px] text-zinc-500">Parking</label><div class="flex items-center gap-1 mt-1"><input id="qPark" type="number" step="0.10" value="0" class="no-spin flex-1 min-w-0 bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm"><div class="flex flex-col gap-1"><button data-t="qPark" data-d="0.10" data-p="2" class="sb w-6 h-6 rounded-full bg-zinc-800 grid place-items-center text-[10px]">▲</button><button data-t="qPark" data-d="-0.10" data-p="2" class="sb w-6 h-6 rounded-full bg-zinc-800 grid place-items-center text-[10px]">▼</button></div></div></div><div><label class="text-[10px] text-zinc-500">MRT</label><div class="flex items-center gap-1 mt-1"><input id="qMrt" type="number" step="0.10" value="0" class="no-spin flex-1 min-w-0 bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm"><div class="flex flex-col gap-1"><button data-t="qMrt" data-d="0.10" data-p="2" class="sb w-6 h-6 rounded-full bg-zinc-800 grid place-items-center text-[10px]">▲</button><button data-t="qMrt" data-d="-0.10" data-p="2" class="sb w-6 h-6 rounded-full bg-zinc-800 grid place-items-center text-[10px]">▼</button></div></div></div><div class="bg-white text-black rounded-xl p-3 text-center mt-4 md:mt-0"><div class="text-[10px] uppercase">Total</div><div id="qTotal" class="fraunces text-xl font-bold">RM0.00</div></div></div>
+</div>
+
+</div>
+
+<div class="bg-[#fdfcf9] rounded-[32px] soft-shadow border p-8">
+<div class="flex justify-between"><h3 class="fraunces text-2xl font-semibold">Journey Planner</h3><div class="flex gap-2"><button id="jSaveRoute" class="bg-white border px-4 py-2 rounded-full text-xs">Save to Regular</button><button id="addStop" class="bg-black text-white px-4 py-2 rounded-full text-xs">+ Add stop</button></div></div>
+<div id="stops" class="space-y-3 mt-6"></div>
+<div class="mt-6 grid md:grid-cols-5 gap-3 bg-[#f6f1eb] rounded-2xl p-4 border">
+<div><label class="text-[10px] uppercase text-stone-400">Toll RM</label><input id="jToll" type="number" value="0.88" class="w-full bg-white border rounded-xl p-3 text-sm mt-1"></div>
+<div><label class="text-[10px] uppercase text-stone-400">Parking RM</label><input id="jPark" type="number" value="5" class="w-full bg-white border rounded-xl p-3 text-sm mt-1"></div>
+<div><label class="text-[10px] uppercase text-stone-400">MRT RM</label><input id="jMrt" type="number" value="0" class="w-full bg-white border rounded-xl p-3 text-sm mt-1"></div>
+<div class="md:col-span-2 flex gap-2"><div class="flex-1 bg-black text-white rounded-xl p-3 text-center"><div class="text-[10px] uppercase text-zinc-400">Mercedes Total</div><div id="jMT" class="fraunces text-xl font-semibold"></div></div><div class="flex-1 bg-[#2b2a28] text-white rounded-xl p-3 text-center"><div class="text-[10px] uppercase text-[#a8a6a1]">Fortuner Total</div><div id="jFT" class="fraunces text-xl font-semibold"></div></div></div>
+</div>
+<div class="mt-4 flex gap-3 items-center"><div class="flex bg-[#f6f1eb] rounded-full p-1 border"><button id="jSingle" class="px-4 py-1.5 rounded-full text-stone-500 text-xs">Single</button><button id="jReturn" class="px-4 py-1.5 rounded-full bg-black text-white text-xs">Return x2</button></div><span id="jLabel" class="text-xs text-stone-500"></span></div>
+<div class="mt-4 bg-[#f6f1eb] rounded-2xl p-4 border"><div class="text-[10px] uppercase tracking-widest text-stone-400 mb-3">MRT alternatives · round trip</div><div id="mrtList" class="space-y-2"></div></div>
+</div>
+
+<div id="regularCard" class="bg-[#fdfcf9] rounded-[32px] soft-shadow border overflow-hidden">
+<div class="p-8"><h3 class="fraunces text-2xl font-semibold">Regular Journeys</h3></div>
+<div class="overflow-x-auto"><table class="w-full text-[13px]" id="mainTable"><thead class="text-[10px] uppercase tracking-widest text-stone-400 bg-[#fbf8f4] border-y"><tr><th class="text-left p-4">Journey</th><th>Distance</th><th>Mercedes Petrol</th><th>Fortuner Petrol</th><th>Toll</th><th>Parking</th><th>MRT</th><th class="bg-black text-white p-4">Total Merc</th><th class="bg-[#2b2a28] text-white p-4">Total Fort</th></tr></thead><tbody id="mainBody" class="divide-y divide-[#f0e8dd]"></tbody></table></div>
+<div id="moreZone" class="overflow-hidden"><button id="moreToggle" class="w-full flex items-center justify-between gap-3 px-5 py-2.5 text-left hover:bg-stone-100 transition"><span class="flex items-center gap-2 text-sm font-semibold text-stone-800"><span id="moreArrow">▸</span> Hidden journeys <span id="moreCount" class="bg-stone-800 text-white rounded-full px-2 py-0.5 text-xs">0</span></span><span class="text-xs text-stone-500">Click to expand</span></button><div id="moreWrap" class="hidden border-t border-[#e7e0d4]"><table class="w-full text-[13px]"><tbody id="moreBody" class="divide-y divide-[#f0e8dd]"></tbody></table><div class="px-5 py-2.5 text-[11px] text-stone-500">Click + to bring a journey back. Drag a row onto this bar to hide it.</div></div></div>
+<div class="p-6 flex items-center justify-end gap-3"><span id="saveMsg" class="text-xs text-stone-500"></span><button id="saveJourneys" class="bg-black text-white px-5 py-2 rounded-full text-xs">Save changes</button></div>
+</div>
+<div class="bg-[#fdfcf9] rounded-[32px] soft-shadow border p-8 mt-6">
+<div class="flex justify-between items-center flex-wrap gap-3"><div><h3 class="fraunces text-2xl font-semibold">Weekly Planner</h3><div class="text-xs text-stone-500 mt-1">Pick a regular journey for each day, or stay home</div></div>
+<div class="flex gap-1.5 flex-wrap justify-end">
+<div class="bg-white border rounded-xl px-2.5 py-2 text-center min-w-[112px]"><div class="text-[9px] uppercase tracking-wide text-stone-400">Starting range</div><div class="flex items-center justify-center gap-1"><input id="startKm" type="number" step="1" placeholder="0" class="no-spin w-12 bg-transparent text-center fraunces text-base font-semibold focus:outline-none"><span class="text-[10px] text-stone-500">km</span></div><div class="flex justify-center gap-1 mt-0.5"><button data-car="merc" class="scar px-1.5 py-0 rounded-full text-[9px]">Merc</button><button data-car="fort" class="scar px-1.5 py-0 rounded-full text-[9px]">Fort</button></div></div>
+<div class="bg-white border rounded-xl px-2.5 py-2 text-center min-w-[112px]"><div class="text-[9px] uppercase tracking-wide text-stone-400">Petrol input cost</div><div id="wP" class="fraunces text-base font-semibold">RM0.00</div><div id="wStart" class="text-[9px] text-stone-400"></div></div>
+<div class="bg-white border rounded-xl px-2.5 py-2 text-center min-w-[90px]"><div class="text-[9px] uppercase tracking-wide text-stone-400">Week KM</div><div id="wK" class="fraunces text-base font-semibold">0 km</div></div>
+<div class="bg-black text-white rounded-xl px-2.5 py-2 text-center min-w-[104px]"><div class="text-[9px] uppercase tracking-wide text-zinc-400">Week Merc</div><div id="wM" class="fraunces text-base font-semibold">RM0.00</div></div>
+<div class="bg-[#2b2a28] text-white rounded-xl px-2.5 py-2 text-center min-w-[104px]"><div class="text-[9px] uppercase tracking-wide text-[#a8a6a1]">Week Fort</div><div id="wF" class="fraunces text-base font-semibold">RM0.00</div></div>
+</div></div>
+<div id="weekDays" class="mt-6 space-y-3"></div>
+<div class="mt-4 flex items-center justify-end gap-3"><span id="weekMsg" class="text-xs text-stone-500"></span><button id="saveWeek" class="bg-black text-white px-5 py-2 rounded-full text-xs">Save week</button></div>
+</div>
+
+</div>
+
+<script>
+let journeys=[
+{name:'Home > Bangsar > Home',dist:60,toll:1.76,park:5,mrt:0},
+{name:'Home > KL > Home',dist:55,toll:1.76,park:8,mrt:0},
+{name:'Bangsar > Nur Yadi',dist:15.2,toll:1.76,park:3,mrt:0},
+{name:'Nur Yadi > Home',dist:26.2,toll:1.76,park:0,mrt:0},
+{name:'Home > MK > Bangsar > Home',dist:75,toll:5.14,park:4.5,mrt:0},
+{name:'Home > MK > Home',dist:70,toll:5.14,park:4.5,mrt:0},
+{name:'Bangsar > MK',dist:16.6,toll:0,park:0,mrt:0},
+{name:'Home > Bangsar',dist:30,toll:0.88,park:5,mrt:0},
+{name:'Bangsar > Home',dist:30,toll:0.88,park:5,mrt:0},
+{name:'Bangsar > Nur Yadi > Bangsar',dist:30.4,toll:0,park:4.5,mrt:0},
+{name:'Bangsar > Nur Yadi > Home',dist:41.4,toll:0.88,park:10,mrt:0},
+{name:'Home > Kajang > Home',dist:17,toll:1.5,park:4.5,mrt:0},
+{name:'Home > KLIA > Home',dist:80,toll:3,park:10,mrt:0},
+{name:'Home > Kajang > MRT KL > Home',dist:17.2,toll:0,park:4.5,mrt:6.6,isMrt:true},
+{name:'Home > UPM > MRT KL > Home',dist:19.6,toll:0,park:4.5,mrt:6.6,isMrt:true},
+];
+async function apiFetch(doc,method,body){
+if(!window.getAuthToken)return null;
+const t=await window.getAuthToken();
+if(!t)return null;
+const r=await fetch('/api/data?doc='+doc,{method:method||'GET',headers:{'Authorization':'Bearer '+t,'content-type':'application/json'},body:body?JSON.stringify(body):undefined});
+if(!r.ok)return null;
+return r.json().catch(()=>null);
+}
+async function loadSavedJourneys(){
+const d=await apiFetch('journeys');if(!d)return false;
+const rows=d.rows||[];
+if(rows.length){
+const oldNames=week.map(x=>x>=0?journeys[x].name:null);
+const ordered=[];
+rows.forEach(v=>{const j=journeys.find(x=>x.name===v.name);if(j&&!ordered.includes(j)){j.dist=v.dist;j.toll=v.toll;j.park=v.park;j.mrt=v.mrt;j.hidden=!!v.hidden;ordered.push(j);}});
+journeys.forEach(j=>{if(!ordered.includes(j))ordered.push(j);});
+journeys.splice(0,journeys.length,...ordered);
+week=oldNames.map(n=>n?journeys.findIndex(j=>j.name===n):-1);
+}
+return true;
+}
+async function saveJourneys(){
+const m=document.getElementById('saveMsg');
+const rows=journeys.map(j=>({name:j.name,dist:j.dist,toll:j.toll,park:j.park,mrt:j.mrt,hidden:!!j.hidden}));
+const ok=await apiFetch('journeys','PUT',{rows});
+m.textContent=ok?'Saved ✓':'Sign in to save';
+clearTimeout(m._t);m._t=setTimeout(()=>m.textContent='',2000);
+}
+let stops=[
+{id:1,val:'Home - Country Heights Kajang'},
+{id:2,val:'Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL'}
+];
+const distMap={
+'Home - Country Heights Kajang|Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL':30,
+'Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL|Home - Country Heights Kajang':30,
+'Home - Country Heights Kajang|KLCC - Lot 241 Level 2 Menara Petronas Twin Tower 50088 KL':28,
+'KLCC - Lot 241 Level 2 Menara Petronas Twin Tower 50088 KL|Home - Country Heights Kajang':28,
+'Home - Country Heights Kajang|Midvalley Gym - Lingkaran Syed Putra Mid Valley 59200 KL':27,
+'Midvalley Gym - Lingkaran Syed Putra Mid Valley 59200 KL|Home - Country Heights Kajang':27,
+'Home - Country Heights Kajang|Ailing Home - Araville 22 Jln Kapas Bangsar 59100 KL':31,
+'Ailing Home - Araville 22 Jln Kapas Bangsar 59100 KL|Home - Country Heights Kajang':31,
+'Home - Country Heights Kajang|Nur Yadi - Lot 17 Level 2 303 Jln Ampang Desa Pahlawan 50450 KL':28,
+'Nur Yadi - Lot 17 Level 2 303 Jln Ampang Desa Pahlawan 50450 KL|Home - Country Heights Kajang':28,
+'Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL|Ailing Home - Araville 22 Jln Kapas Bangsar 59100 KL':1.2,
+'Ailing Home - Araville 22 Jln Kapas Bangsar 59100 KL|Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL':1.2,
+'Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL|Midvalley Gym - Lingkaran Syed Putra Mid Valley 59200 KL':6.5,
+'Nur Yadi - Lot 17 Level 2 303 Jln Ampang Desa Pahlawan 50450 KL|Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL':9,
+'Home - Country Heights Kajang|KLIA - Kuala Lumpur International Airport Sepang':40,
+'KLIA - Kuala Lumpur International Airport Sepang|Home - Country Heights Kajang':40,
+};
+let qReturn=false, jReturn=true;
+function getDist(a,b){return distMap[a+'|'+b]??distMap[b+'|'+a]??10;}
+function totalDist(){let t=0;for(let i=0;i<stops.length-1;i++)t+=getDist(stops[i].val,stops[i+1].val);return t;}
+function shortName(full){if(full.includes('Country Heights'))return 'Home';if(full.includes('Bangsar'))return 'Bangsar';if(full.includes('KLCC'))return 'KLCC';if(full.includes('Midvalley'))return 'MK';if(full.includes('Ailing'))return 'Araville';if(full.includes('Nur Yadi'))return 'Nur Yadi';if(full.includes('KLIA'))return 'KLIA';return 'Stop';}
+function enhanceSelect(sel){
+if(sel.dataset.enh)return;sel.dataset.enh='1';
+let host=sel.parentNode;
+if(!host.classList.contains('relative')){const w=document.createElement('div');w.className='relative';host.insertBefore(w,sel);w.appendChild(sel);host=w;}
+sel.style.display='none';
+const dark=sel.hasAttribute('data-dark');
+const btn=document.createElement('button');
+btn.type='button';
+btn.className=dark?'inline-flex items-center gap-2 bg-zinc-800 text-white rounded-full px-3 py-1 text-xs':'w-full flex items-center justify-between gap-2 bg-[#f6f1eb] border rounded-xl p-3 text-sm text-left text-black';
+const menu=document.createElement('div');
+menu.className=(dark?'bg-zinc-900 border-zinc-800 text-white':'bg-[#fdfcf9] border-[#e8ddd0] text-black')+' dd-menu hidden absolute left-0 top-full mt-2 min-w-full w-max max-w-[85vw] z-40 border rounded-2xl shadow-xl p-1.5';
+const draw=()=>{
+const o=sel.options[sel.selectedIndex];
+btn.innerHTML='<span class="truncate min-w-0">'+(o?o.text:'')+'</span><span class="text-[10px] opacity-60 shrink-0">▾</span>';
+menu.innerHTML='';
+[...sel.options].forEach((op,i)=>{
+const b=document.createElement('button');b.type='button';b.textContent=op.text;
+b.className='block w-full text-left rounded-xl px-3 py-2 text-sm '+(i===sel.selectedIndex?(dark?'bg-white text-black':'bg-black text-white'):(dark?'hover:bg-zinc-800':'hover:bg-[#f6f1eb]'));
+b.onclick=e=>{e.stopPropagation();sel.selectedIndex=i;sel.dispatchEvent(new Event('input',{bubbles:true}));sel.dispatchEvent(new Event('change',{bubbles:true}));menu.classList.add('hidden');draw();};
+menu.appendChild(b);
+});
+};
+btn.onclick=e=>{e.stopPropagation();document.querySelectorAll('.dd-menu').forEach(m=>{if(m!==menu)m.classList.add('hidden');});menu.classList.toggle('hidden');};
+host.appendChild(btn);host.appendChild(menu);draw();
+}
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const WEEK_DEFAULT=['Stay home','Home > Bangsar > Home','Home > Bangsar','Bangsar > Home','Home > Bangsar > Home','Home > KL > Home','Stay home'];
+let week=WEEK_DEFAULT.map(n=>journeys.findIndex(j=>j.name===n));
+function rates(){const f=parseFloat(document.getElementById('fuel').value)||0;return {m:(parseFloat(document.getElementById('mercL').value)||0)*f/100,f:(parseFloat(document.getElementById('fortL').value)||0)*f/100};}
+function updateWeek(){
+const r=rates();let tm=0,tf=0,tk=0;
+week.forEach((idx,i)=>{
+let m=0,f=0,k=0;
+if(idx>=0){const j=journeys[idx];k=j.dist;m=j.dist*r.m+j.toll+j.park+j.mrt;f=j.dist*r.f+j.toll+j.park+j.mrt;}
+tm+=m;tf+=f;tk+=k;
+document.querySelector('[data-wm="'+i+'"]').textContent='RM'+m.toFixed(2);
+document.querySelector('[data-wf="'+i+'"]').textContent='RM'+f.toFixed(2);
+document.querySelector('[data-wk="'+i+'"]').textContent=(Math.round(k*10)/10)+' km';
+});
+document.getElementById('wM').textContent='RM'+tm.toFixed(2);
+document.getElementById('wF').textContent='RM'+tf.toFixed(2);
+document.getElementById('wK').textContent=(Math.round(tk*10)/10)+' km';
+updatePetrolTotal();
+}
+let petrol=['','','','','','',''];
+async function saveWeek(){
+const m=document.getElementById('weekMsg');
+const days=week.map(k=>k>=0?journeys[k].name:'Stay home');
+const ok=await apiFetch('weekly','PUT',{days,petrol,startKm:document.getElementById('startKm').value,startCar});
+m.textContent=ok?'Saved ✓':'Sign in to save';
+clearTimeout(m._t);m._t=setTimeout(()=>m.textContent='',2000);
+}
+async function loadWeek(){
+const d=await apiFetch('weekly');if(!d)return false;
+if(Array.isArray(d.days)&&d.days.length===7)week=d.days.map(n=>n==='Stay home'?-1:journeys.findIndex(j=>j.name===n));
+if(Array.isArray(d.petrol)&&d.petrol.length===7)petrol=d.petrol.map(v=>v==null?'':String(v));
+if(d.startKm!=null)document.getElementById('startKm').value=String(d.startKm);
+if(d.startCar)startCar=d.startCar;
+return true;
+}
+async function loadAll(){await loadSavedJourneys();await loadWeek();buildTable();buildWeek();paintCar();recalc();}
+let startCar='merc';
+function paintCar(){document.querySelectorAll('.scar').forEach(b=>{const on=b.dataset.car===startCar;b.className='scar px-2 py-0.5 rounded-full text-[10px] '+(on?'bg-black text-white':'bg-[#f6f1eb] text-stone-500');});}
+function updatePetrolTotal(){
+const t=petrol.reduce((sum,v)=>sum+(parseFloat(v)||0),0);
+const r=rates();
+const km=parseFloat(document.getElementById('startKm').value)||0;
+const sc=km*(startCar==='merc'?r.m:r.f);
+document.getElementById('wP').textContent='RM'+(t+sc).toFixed(2);
+document.getElementById('wStart').textContent=km?'incl. RM'+sc.toFixed(2)+' from range':'';
+}
+function buildWeek(){
+const c=document.getElementById('weekDays');c.innerHTML='';
+DAYS.forEach((d,i)=>{
+const row=document.createElement('div');
+row.className='flex flex-col md:flex-row md:items-center gap-3 bg-[#f6f1eb] rounded-2xl p-4 border';
+row.innerHTML='<div class="w-14 text-xs uppercase tracking-widest text-stone-500">'+d+'</div><div class="flex-1 min-w-0"><select class="wSel"></select></div><span data-wk="'+i+'" class="text-xs text-stone-500 w-16 shrink-0">0 km</span><div class="flex gap-2 text-xs"><span data-wm="'+i+'" class="bg-black text-white rounded-lg px-3 py-1.5">RM0.00</span><span data-wf="'+i+'" class="bg-[#2b2a28] text-white rounded-lg px-3 py-1.5">RM0.00</span></div><input data-petrol="'+i+'" type="number" step="0.10" placeholder="Petrol RM" class="no-spin w-28 shrink-0 bg-white border rounded-xl p-2 text-sm">';
+c.appendChild(row);
+const sel=row.querySelector('select');
+sel.add(new Option('Stay home',-1));
+journeys.map((j,k)=>k).sort((x,y)=>journeys[x].name.localeCompare(journeys[y].name)).forEach(k=>sel.add(new Option(journeys[k].name,k)));
+sel.value=String(week[i]);
+sel.addEventListener('change',()=>{week[i]=parseInt(sel.value);updateWeek();});
+enhanceSelect(sel);
+const inp=row.querySelector('[data-petrol]');
+inp.value=petrol[i]??'';
+inp.addEventListener('input',()=>{petrol[i]=inp.value;updatePetrolTotal();});
+});
+}
+function rowHTML(j){
+return `<tr class="${j.isMrt?'bg-[#ece5db]':''} hover:bg-[#fbf8f4]" data-key="${j.name}"><td class="p-4 font-medium cursor-grab select-none touch-none name-cell"><span class="inline-flex items-center gap-2"><button class="ibtn ${selectedKey===j.name?'':'hidden '}w-5 h-5 rounded-full bg-black text-white text-xs leading-none shrink-0">${j.hidden?'+':'−'}</button><span>${j.name}</span></span></td>
+<td class="p-4"><div class="relative w-20"><input data-key="${j.name}" data-k="dist" value="${j.dist}" class="no-spin w-full bg-[#f6f1eb] rounded-lg p-2 text-center"><span class="absolute right-1 top-2 text-[10px] text-stone-400">km</span></div></td>
+<td class="p-4" data-c="mc"></td><td class="p-4" data-c="fc"></td>
+<td class="p-4"><input data-key="${j.name}" data-k="toll" value="${j.toll}" class="w-14 bg-[#f6f1eb] rounded-lg p-2 text-center"></td>
+<td class="p-4"><input data-key="${j.name}" data-k="park" value="${j.park}" class="w-14 bg-[#f6f1eb] rounded-lg p-2 text-center"></td>
+<td class="p-4"><input data-key="${j.name}" data-k="mrt" value="${j.mrt}" class="w-14 bg-[#f6f1eb] rounded-lg p-2 text-center"></td>
+<td class="p-4 bg-black text-white font-bold rounded-lg" data-c="tm"></td>
+<td class="p-4 bg-[#2b2a28] text-white font-bold rounded-lg" data-c="tf"></td></tr>`;
+}
+function buildTable(){
+document.getElementById('mainBody').innerHTML=journeys.filter(j=>!j.hidden).map(rowHTML).join('');
+document.getElementById('moreBody').innerHTML=journeys.filter(j=>j.hidden).map(rowHTML).join('');
+document.getElementById('moreCount').textContent=journeys.filter(j=>j.hidden).length;
+document.querySelectorAll('#regularCard input[data-key]').forEach(inp=>inp.addEventListener('input',e=>{
+const j=journeys.find(x=>x.name===e.target.dataset.key);if(!j)return;
+j[e.target.dataset.k]=parseFloat(e.target.value)||0;
+recalc();
+}));
+updateTable();
+}
+function updateTable(){
+const r=rates();
+document.querySelectorAll('#mainBody tr[data-key],#moreBody tr[data-key]').forEach(tr=>{
+const j=journeys.find(x=>x.name===tr.dataset.key);if(!j)return;
+const mc=j.dist*r.m, fc=j.dist*r.f;
+const tm=mc+j.toll+j.park+j.mrt, tf=fc+j.toll+j.park+j.mrt;
+tr.querySelector('[data-c=mc]').textContent='RM'+mc.toFixed(2);
+tr.querySelector('[data-c=fc]').textContent='RM'+fc.toFixed(2);
+tr.querySelector('[data-c=tm]').textContent='RM'+tm.toFixed(2);
+tr.querySelector('[data-c=tf]').textContent='RM'+tf.toFixed(2);
+});
+}
+function syncFromDom(){
+const mainKeys=[...document.querySelectorAll('#mainBody tr[data-key]')].map(t=>t.dataset.key);
+const moreKeys=[...document.querySelectorAll('#moreBody tr[data-key]')].map(t=>t.dataset.key);
+const oldNames=week.map(x=>x>=0?journeys[x].name:null);
+const ordered=[];
+mainKeys.forEach(n=>{const j=journeys.find(x=>x.name===n);if(j){j.hidden=false;ordered.push(j);}});
+moreKeys.forEach(n=>{const j=journeys.find(x=>x.name===n);if(j){j.hidden=true;ordered.push(j);}});
+journeys.forEach(j=>{if(!ordered.includes(j))ordered.push(j);});
+journeys.splice(0,journeys.length,...ordered);
+week=oldNames.map(n=>n?journeys.findIndex(j=>j.name===n):-1);
+buildTable();
+document.getElementById('weekDays').innerHTML='';buildWeek();
+recalc();
+}
+function saveRouteToRegular(){
+const btn=document.getElementById('jSaveRoute');
+const short=stops.map(s=>shortName(s.val));
+let name=short.join(' > ');
+if(jReturn)name+=' > '+short[0];
+const mult=jReturn?2:1;
+const dist=totalDist()*mult;
+const toll=(parseFloat(document.getElementById('jToll').value)||0)*mult;
+const park=parseFloat(document.getElementById('jPark').value)||0;
+const mrt=parseFloat(document.getElementById('jMrt').value)||0;
+const oldNames=week.map(x=>x>=0?journeys[x].name:null);
+const ex=journeys.find(j=>j.name===name);
+if(ex){ex.dist=dist;ex.toll=toll;ex.park=park;ex.mrt=mrt;}
+else journeys.push({name,dist,toll,park,mrt});
+week=oldNames.map(n=>n?journeys.findIndex(j=>j.name===n):-1);
+buildTable();
+document.getElementById('weekDays').innerHTML='';
+buildWeek();recalc();
+saveJourneys();
+btn.textContent=ex?'Updated in Regular ✓':'Added to Regular ✓';
+clearTimeout(btn._t);btn._t=setTimeout(()=>btn.textContent='Save to Regular',2000);
+}
+function renderStops(){
+let c=document.getElementById('stops');c.innerHTML='';
+stops.forEach((s,i)=>{
+let d=document.createElement('div');d.className='flex gap-2 items-center';
+d.innerHTML=`<span class="w-6 h-6 bg-[#f6f1eb] rounded-full grid place-items-center text-xs">${i+1}</span>
+<div class="relative flex-1"><select data-id="${s.id}" class="sSel w-full appearance-none bg-[#f6f1eb] border rounded-xl p-3 pr-9 text-sm">
+<option ${s.val.includes('Country Heights')?'selected':''}>Home - Country Heights Kajang</option>
+<option ${s.val.includes('Nur Yadi')?'selected':''}>Nur Yadi - Lot 17 Level 2 303 Jln Ampang Desa Pahlawan 50450 KL</option>
+<option ${s.val.includes('KLCC')?'selected':''}>KLCC - Lot 241 Level 2 Menara Petronas Twin Tower 50088 KL</option>
+<option ${s.val.includes('Bangsar Village')?'selected':''}>Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL</option>
+<option ${s.val.includes('Midvalley')?'selected':''}>Midvalley Gym - Lingkaran Syed Putra Mid Valley 59200 KL</option>
+<option ${s.val.includes('Ailing')?'selected':''}>Ailing Home - Araville 22 Jln Kapas Bangsar 59100 KL</option>
+<option ${s.val.includes('KLIA')?'selected':''}>KLIA - Kuala Lumpur International Airport Sepang</option>
+</select></div>
+${stops.length>2?`<button data-r="${s.id}" class="text-stone-400">✕</button>`:''}`;
+c.appendChild(d);
+});
+document.querySelectorAll('.sSel').forEach(enhanceSelect);
+document.querySelectorAll('.sSel').forEach(e=>e.addEventListener('change',ev=>{
+let id=parseInt(ev.target.dataset.id);stops.find(x=>x.id===id).val=ev.target.value;recalc();
+}));
+document.querySelectorAll('[data-r]').forEach(b=>b.addEventListener('click',ev=>{
+stops=stops.filter(x=>x.id!==parseInt(ev.target.dataset.r));renderStops();recalc();
+}));
+}
+function recalc(){
+let fuel=parseFloat(document.getElementById('fuel').value)||0;
+let mL=parseFloat(document.getElementById('mercL').value)||0;
+let fL=parseFloat(document.getElementById('fortL').value)||0;
+let mCPK=mL*fuel/100, fCPK=fL*fuel/100;
+document.getElementById('mCPK2').textContent=mCPK.toFixed(2);
+document.getElementById('fCPK2').textContent=fCPK.toFixed(2);
+document.getElementById('mKPR').textContent=mCPK?(1/mCPK).toFixed(2):'0';
+document.getElementById('fKPR').textContent=fCPK?(1/fCPK).toFixed(2):'0';
+document.getElementById('m100').textContent=mCPK?(100/mCPK).toFixed(1)+' km':'0';
+document.getElementById('f100').textContent=fCPK?(100/fCPK).toFixed(1)+' km':'0';
+const mir=(id,v)=>{const el=document.getElementById(id);if(document.activeElement!==el)el.value=v;};
+mir('sFuel',document.getElementById('fuel').value);mir('sMercL',document.getElementById('mercL').value);mir('sFortL',document.getElementById('fortL').value);
+document.getElementById('sMCPK').textContent=mCPK.toFixed(2);document.getElementById('sFCPK').textContent=fCPK.toFixed(2);
+
+// quick
+let qCar=document.getElementById('qCar').value;
+let qDist=parseFloat(document.getElementById('qDist').value)||0;
+let qMult=qReturn?2:1;
+let qToll=parseFloat(document.getElementById('qToll').value)||0;
+let qPark=parseFloat(document.getElementById('qPark').value)||0;
+let qMrt=parseFloat(document.getElementById('qMrt').value)||0;
+let rate=qCar==='merc'?mCPK:fCPK;
+document.getElementById('qTotal').textContent='RM'+(qDist*qMult*rate+qToll*qMult+qPark+qMrt).toFixed(2);
+
+// journey
+let jDist=totalDist();
+let jMult=jReturn?2:1;
+let jToll=parseFloat(document.getElementById('jToll').value)||0;
+let jPark=parseFloat(document.getElementById('jPark').value)||0;
+let jMrt=parseFloat(document.getElementById('jMrt').value)||0;
+document.getElementById('jMT').textContent='RM'+(jDist*jMult*mCPK+jToll*jMult+jPark+jMrt).toFixed(2);
+document.getElementById('jFT').textContent='RM'+(jDist*jMult*fCPK+jToll*jMult+jPark+jMrt).toFixed(2);
+// MRT alternatives (round-trip rows from the table), compared with driving Merc total above
+let drvM=jDist*jMult*mCPK+jToll*jMult+jPark+jMrt;
+let mrtHTML='';
+journeys.filter(j=>j.isMrt&&!j.hidden).forEach(j=>{
+let m=j.dist*mCPK+j.toll+j.park+j.mrt, f=j.dist*fCPK+j.toll+j.park+j.mrt;
+let d=drvM-m;
+let cmp=Math.abs(d)<0.005?'same as driving':(d>0?`saves RM${d.toFixed(2)} vs driving`:`RM${(-d).toFixed(2)} more than driving`);
+mrtHTML+=`<div class="flex flex-wrap items-center justify-between gap-3 bg-white rounded-xl p-3 border"><div><div class="text-sm font-medium">${j.name}</div><div class="text-[10px] text-stone-400">${j.dist} km · ${cmp}</div></div><div class="flex gap-2 text-sm"><span class="bg-black text-white rounded-lg px-3 py-1.5">Merc RM${m.toFixed(2)}</span><span class="bg-[#2b2a28] text-white rounded-lg px-3 py-1.5">Fort RM${f.toFixed(2)}</span></div></div>`;
+});
+document.getElementById('mrtList').innerHTML=mrtHTML;
+updateWeek();
+let names=stops.map(s=>shortName(s.val)).join(' > ');
+document.getElementById('jLabel').textContent=`${names} • ${jDist.toFixed(1)} km ${jReturn?`×2 = ${(jDist*2).toFixed(1)} km`:''}`;
+
+// table
+updateTable();
+// chart (orange = single, dark = return)
+let chartData=[
+{label:'Home',dist:0},
+{label:'Bangsar',dist:30},
+{label:'KLCC',dist:28},
+{label:'MK',dist:27},
+{label:'Kajang',dist:8.6},
+{label:'Nur Yadi',dist:28}
+].map(c=>({...c,cost:c.dist*mCPK,ret:c.dist*2*mCPK}));
+let maxC=Math.max(...chartData.map(c=>c.ret),1);
+let W=600,H=180,baseY=H-35;
+let pts=chartData.map((c,i)=>({
+x:(i+0.5)/chartData.length*W,
+y:c.cost===0?baseY:baseY-(c.cost/maxC)*110,
+yr:c.ret===0?baseY:baseY-(c.ret/maxC)*110,
+c
+}));
+function smooth(ps){
+let d=`M${ps[0].x},${ps[0].y}`;
+for(let i=1;i<ps.length;i++){
+const p=ps[i-1],q=ps[i];
+const cx1=p.x+(q.x-p.x)*0.4, cx2=q.x-(q.x-p.x)*0.4;
+d+=` C${cx1},${p.y} ${cx2},${q.y} ${q.x},${q.y}`;
+}
+return d;
+}
+function area(ps){return smooth(ps)+` L${ps[ps.length-1].x},${baseY} L${ps[0].x},${baseY} Z`;}
+const singleP=pts.map(p=>({x:p.x,y:p.y})), retP=pts.map(p=>({x:p.x,y:p.yr}));
+document.getElementById('line').setAttribute('d',smooth(singleP));
+document.getElementById('fill').setAttribute('d',area(singleP));
+document.getElementById('line2').setAttribute('d',smooth(retP));
+document.getElementById('fill2').setAttribute('d',area(retP));
+let dots=document.getElementById('dots');dots.innerHTML='';
+const dot=(x,y,txt,col)=>`<g class="pt"><circle cx="${x}" cy="${y}" r="14" fill="transparent"/><circle cx="${x}" cy="${y}" r="6" fill="${col}"/><circle cx="${x}" cy="${y}" r="2.5" fill="white"/><g class="tip" pointer-events="none"><rect x="${x-28}" y="${y-36}" width="56" height="22" rx="11" fill="#111"/><text x="${x}" y="${y-21}" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">${txt}</text></g></g>`;
+pts.forEach(p=>{dots.innerHTML+=dot(p.x,p.yr,'RM'+Math.round(p.c.ret),'#111')+dot(p.x,p.y,'RM'+Math.round(p.c.cost),'#e9a082');});
+['cH','cB','cK','cM','cKj','cN'].forEach((id,i)=>{const c=chartData[i];document.getElementById(id).textContent=Math.round(c.cost)+'/'+Math.round(c.ret);});
+document.getElementById('chartLabel').textContent=`Mercedes @ RM${fuel.toFixed(2)} · single / return`;
+}
+document.querySelectorAll('.sb').forEach(b=>b.addEventListener('click',()=>{
+let t=document.getElementById(b.dataset.t);
+let d=parseFloat(b.dataset.d);
+let v=parseFloat(t.value)||0;
+let nv=v+d;
+if(nv<0) nv=0;
+t.value=nv.toFixed(b.dataset.p!==undefined?+b.dataset.p:(b.dataset.t==='fuel'?2:1));
+recalc();
+}));
+['fuel','mercL','fortL','qCar','qDist','qToll','qPark','qMrt','jToll','jPark','jMrt'].forEach(id=>document.getElementById(id).addEventListener('input',recalc));
+document.getElementById('qSingle').addEventListener('click',()=>{qReturn=false;document.getElementById('qSingle').className='px-4 py-1 rounded-full bg-white text-black text-xs font-semibold';document.getElementById('qReturn').className='px-4 py-1 rounded-full text-zinc-400 text-xs';recalc();});
+document.getElementById('qReturn').addEventListener('click',()=>{qReturn=true;document.getElementById('qReturn').className='px-4 py-1 rounded-full bg-white text-black text-xs font-semibold';document.getElementById('qSingle').className='px-4 py-1 rounded-full text-zinc-400 text-xs';recalc();});
+document.getElementById('jSingle').addEventListener('click',()=>{jReturn=false;document.getElementById('jSingle').className='px-4 py-1.5 rounded-full bg-black text-white text-xs';document.getElementById('jReturn').className='px-4 py-1.5 rounded-full text-stone-500 text-xs';recalc();});
+document.getElementById('jReturn').addEventListener('click',()=>{jReturn=true;document.getElementById('jReturn').className='px-4 py-1.5 rounded-full bg-black text-white text-xs';document.getElementById('jSingle').className='px-4 py-1.5 rounded-full text-stone-500 text-xs';recalc();});
+document.getElementById('addStop').addEventListener('click',()=>{
+let nid=Date.now();
+stops.push({id:nid,val:'Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL'});
+renderStops();recalc();
+});
+[['sFuel','fuel'],['sMercL','mercL'],['sFortL','fortL']].forEach(([a,m])=>document.getElementById(a).addEventListener('input',e=>{document.getElementById(m).value=e.target.value;recalc();}));
+new IntersectionObserver(([e])=>document.getElementById('stickyBar').classList.toggle('hidden',e.isIntersecting)).observe(document.getElementById('topCards'));
+document.getElementById('saveJourneys').addEventListener('click',saveJourneys);
+document.getElementById('jSaveRoute').addEventListener('click',saveRouteToRegular);
+document.getElementById('saveWeek').addEventListener('click',saveWeek);
+document.getElementById('startKm').addEventListener('input',updatePetrolTotal);
+document.querySelectorAll('.scar').forEach(b=>b.addEventListener('click',()=>{startCar=b.dataset.car;paintCar();updatePetrolTotal();}));
+let selectedKey=null;
+let drag=null, press=null;
+const regularCard=document.getElementById('regularCard');
+regularCard.addEventListener('pointerdown',e=>{
+if(e.target.closest('input,button'))return;
+const cell=e.target.closest('.name-cell');if(!cell)return;
+press={tr:cell.parentNode,x:e.clientX,y:e.clientY};
+});
+window.addEventListener('pointermove',e=>{
+if(!press&&!drag)return;
+if(!drag){
+if(Math.hypot(e.clientX-press.x,e.clientY-press.y)<6)return;
+drag={tr:press.tr};drag.tr.classList.add('opacity-60');press=null;
+}
+e.preventDefault();
+const el=document.elementFromPoint(e.clientX,e.clientY);if(!el)return;
+const mainBody=document.getElementById('mainBody'),moreBody=document.getElementById('moreBody');
+const row=el.closest('tr[data-key]');
+if(row&&row!==drag.tr&&(row.parentNode===mainBody||row.parentNode===moreBody)){
+const r=row.getBoundingClientRect();
+const after=e.clientY>r.top+r.height/2;
+row.parentNode.insertBefore(drag.tr,after?row.nextSibling:row);
+}else if(el.closest('#mainBody')){mainBody.appendChild(drag.tr);}
+else if(el.closest('#moreZone')){moreBody.appendChild(drag.tr);}
+},{passive:false});
+const endDrag=()=>{
+if(press){selectedKey=selectedKey===press.tr.dataset.key?null:press.tr.dataset.key;press=null;buildTable();return;}
+if(!drag)return;
+drag.tr.classList.remove('opacity-60');drag=null;syncFromDom();
+};
+window.addEventListener('pointerup',endDrag);
+window.addEventListener('pointercancel',endDrag);
+regularCard.addEventListener('click',e=>{
+const b=e.target.closest('.ibtn');if(!b)return;
+const key=b.closest('tr').dataset.key;
+const j=journeys.find(x=>x.name===key);if(!j)return;
+j.hidden=!j.hidden;selectedKey=null;
+buildTable();recalc();
+});
+document.getElementById('moreToggle').addEventListener('click',()=>{
+const w=document.getElementById('moreWrap');w.classList.toggle('hidden');
+document.getElementById('moreArrow').textContent=w.classList.contains('hidden')?'▸':'▾';
+});
+window.addEventListener('signedin',loadAll);
+enhanceSelect(document.getElementById('qCar'));
+document.addEventListener('click',()=>document.querySelectorAll('.dd-menu').forEach(m=>m.classList.add('hidden')));
+renderStops();
+buildWeek();
+buildTable();
+paintCar();
+recalc();
+</script>
+<script type="module">
+import { createAuthClient } from 'https://esm.sh/@neondatabase/auth';
+const AUTH_URL = 'PASTE_YOUR_NEON_AUTH_URL_HERE';
+const auth = createAuthClient(AUTH_URL);
+const $ = id => document.getElementById(id);
+function show(signed, email){
+  $('authStatus').textContent = signed ? 'Signed in as ' + email : 'Not signed in';
+  ['authIn','authUp','authEmail','authPass'].forEach(id => $(id).classList.toggle('hidden', signed));
+  $('authOut').classList.toggle('hidden', !signed);
+}
+window.getAuthToken = async () => {
+  const r = await auth.token();
+  return r?.data?.token ?? null;
+};
+async function refresh(){
+  const s = await auth.getSession();
+  const u = s?.data?.user;
+  show(!!u, u?.email);
+  if (u) window.dispatchEvent(new Event('signedin'));
+}
+async function go(fn){
+  const r = await fn();
+  if (r?.error) { $('authStatus').textContent = r.error.message || 'Something went wrong'; return; }
+  await refresh();
+}
+$('authIn').onclick = () => go(() => auth.signIn.email({ email: $('authEmail').value, password: $('authPass').value }));
+$('authUp').onclick = () => go(() => auth.signUp.email({ email: $('authEmail').value, password: $('authPass').value, name: $('authEmail').value.split('@')[0] }));
+$('authOut').onclick = async () => { await auth.signOut(); show(false); };
+refresh();
+</script>
+</body>
+</html>

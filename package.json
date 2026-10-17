@@ -1,0 +1,10 @@
+{
+  "name": "petrol-calculator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@neondatabase/serverless": "latest",
+    "jose": "^5.9.6"
+  }
+}
