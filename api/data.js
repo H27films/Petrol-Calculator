@@ -5,10 +5,6 @@ const DOCS = ['journeys', 'weekly'];
 const OWNER_ID = 'owner';
 
 export default async function handler(req, res) {
-  if (!process.env.ACCESS_CODE || req.headers['x-access-code'] !== process.env.ACCESS_CODE) {
-    return res.status(401).json({ error: 'Wrong access code' });
-  }
-
   const doc = req.query.doc;
   if (!DOCS.includes(doc)) return res.status(400).json({ error: 'Unknown document' });
 
