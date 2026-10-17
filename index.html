@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,12 +10,9 @@
 </head>
 <body class="p-3 md:p-8">
 <div id="authBar" class="max-w-6xl mx-auto mb-3 flex flex-wrap items-center gap-2 text-xs">
-<span id="authStatus" class="text-stone-500 mr-2">Not signed in</span>
-<input id="authEmail" type="email" placeholder="Email" class="rounded-full border px-3 py-1.5 bg-white">
-<input id="authPass" type="password" placeholder="Password" class="rounded-full border px-3 py-1.5 bg-white">
-<button id="authIn" class="bg-black text-white rounded-full px-4 py-1.5">Sign in</button>
-<button id="authUp" class="bg-white border rounded-full px-4 py-1.5">Create account</button>
-<button id="authOut" class="hidden bg-white border rounded-full px-4 py-1.5">Sign out</button>
+<span id="authStatus" class="text-stone-500 mr-2">Enter access code</span>
+<input id="authPass" type="password" placeholder="Access code" class="rounded-full border px-3 py-1.5 bg-white">
+<button id="authIn" class="bg-black text-white rounded-full px-4 py-1.5">Unlock</button>
 </div>
 <div id="stickyBar" class="hidden fixed top-0 inset-x-0 z-50 px-3 md:px-8 pt-2">
 <div class="max-w-6xl mx-auto bg-[#fdfcf9]/95 backdrop-blur border border-[#e8ddd0] rounded-[20px] shadow-lg px-5 py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs">
@@ -122,10 +120,9 @@ let journeys=[
 {name:'Home > UPM > MRT KL > Home',dist:19.6,toll:0,park:4.5,mrt:6.6,isMrt:true},
 ];
 async function apiFetch(doc,method,body){
-if(!window.getAuthToken)return null;
-const t=await window.getAuthToken();
-if(!t)return null;
-const r=await fetch('/api/data?doc='+doc,{method:method||'GET',headers:{'Authorization':'Bearer '+t,'content-type':'application/json'},body:body?JSON.stringify(body):undefined});
+const code=localStorage.getItem('accessCode');
+if(!code)return null;
+const r=await fetch('/api/data?doc='+doc,{method:method||'GET',headers:{'x-access-code':code,'content-type':'application/json'},body:body?JSON.stringify(body):undefined});
 if(!r.ok)return null;
 return r.json().catch(()=>null);
 }
@@ -523,46 +520,28 @@ buildTable();
 paintCar();
 recalc();
 </script>
-<script type="module">
-import { createAuthClient } from 'https://esm.sh/@neondatabase/auth';
-const AUTH_URL = 'https://ep-solitary-hill-b5myv36j.neonauth.c-7.us-east-2.aws.neon.tech/neondb/auth';
-const auth = createAuthClient(AUTH_URL);
-const $ = id => document.getElementById(id);
-function say(msg){ $('authStatus').textContent = msg; }
-function show(signed, email){
-  say(signed ? 'Signed in as ' + email : 'Not signed in');
-  ['authIn','authUp','authEmail','authPass'].forEach(id => $(id).classList.toggle('hidden', signed));
-  $('authOut').classList.toggle('hidden', !signed);
+<script>
+const $=id=>document.getElementById(id);
+function unlockUI(ok,msg){
+  $('authStatus').textContent=msg;
+  $('authPass').classList.toggle('hidden',ok);
+  $('authIn').textContent=ok?'Lock':'Unlock';
 }
-window.getAuthToken = async () => {
-  const r = await auth.token();
-  return r?.data?.token ?? null;
+async function checkCode(){
+  const r=await fetch('/api/data?doc=journeys',{headers:{'x-access-code':localStorage.getItem('accessCode')||''}});
+  if(r.ok){unlockUI(true,'Unlocked');window.dispatchEvent(new Event('signedin'));}
+  else{localStorage.removeItem('accessCode');unlockUI(false,'Wrong access code');}
+}
+$('authIn').onclick=()=>{
+  if($('authIn').textContent==='Lock'){localStorage.removeItem('accessCode');unlockUI(false,'Locked');return;}
+  const code=$('authPass').value.trim();
+  if(!code){$('authStatus').textContent='Type your access code';return;}
+  localStorage.setItem('accessCode',code);
+  checkCode();
 };
-async function refresh(){
-  try {
-    const s = await auth.getSession();
-    const u = s?.data?.user;
-    show(!!u, u?.email);
-    if (u) window.dispatchEvent(new Event('signedin'));
-  } catch (e) { show(false); }
-}
-async function go(fn){
-  const email = $('authEmail').value.trim();
-  const password = $('authPass').value;
-  if (!email || !password) { say('Type your email and password first'); return; }
-  say('Working…');
-  try {
-    const r = await fn(email, password);
-    if (r?.error) { say(r.error.message || 'Could not sign in'); return; }
-    await refresh();
-  } catch (e) {
-    say(e?.message || 'Could not sign in');
-  }
-}
-$('authIn').onclick = () => go((email, password) => auth.signIn.email({ email, password }));
-$('authUp').onclick = () => go((email, password) => auth.signUp.email({ email, password, name: email.split('@')[0] }));
-$('authOut').onclick = async () => { try { await auth.signOut(); } catch (e) {} show(false); };
-refresh();
+if(localStorage.getItem('accessCode'))checkCode();
+else unlockUI(false,'Enter access code');
 </script>
 </body>
 </html>
+```
