@@ -220,43 +220,7 @@ addBtn.className='w-full text-left rounded-lg px-3 py-2 text-sm text-stone-600 h
 const note=document.createElement('div');note.className='text-[10px] text-stone-400';
 note.textContent='New addresses default to ~10 km per leg until added to the distance map.';
 menu.append(list,addBtn,note);
-
-// Modal popup for adding a new address
-const backdrop=document.createElement('div');
-backdrop.className='fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden';
-const modal=document.createElement('div');
-modal.className='hidden fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-51 bg-[#fdfcf9] border-[#e8ddd0] border rounded-2xl shadow-2xl p-6 w-full max-w-sm';
-const mt=document.createElement('h3');mt.className='fraunces text-lg font-semibold mb-4';mt.textContent='Add new address';
-const nameInp=document.createElement('input');nameInp.type='text';nameInp.placeholder='Address name (e.g. Home)';
-nameInp.className='w-full border border-[#e8ddd0] rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-1 ring-black';
-const areaInp=document.createElement('input');areaInp.type='text';areaInp.placeholder='Area / full address (e.g. Country Heights Kajang)';
-areaInp.className='w-full border border-[#e8ddd0] rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-1 ring-black';
-const btns=document.createElement('div');btns.className='flex gap-2 justify-end';
-const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancel';
-cancel.className='px-4 py-2 rounded-lg text-sm text-stone-600 hover:bg-[#f6f1eb]';
-const save=document.createElement('button');save.type='button';save.textContent='Add';
-save.className='bg-black text-white px-4 py-2 rounded-lg text-sm';
-const closeModal=()=>{backdrop.classList.add('hidden');modal.classList.add('hidden');modal.querySelectorAll('input').forEach(i=>i.value='');};
-cancel.onclick=closeModal;
-backdrop.onclick=e=>{if(e.target===backdrop)closeModal();};
-document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&!backdrop.classList.contains('hidden'))closeModal();});
-save.onclick=e=>{
-e.stopPropagation();
-const name=nameInp.value.trim();
-const area=areaInp.value.trim();
-if(!name||!area){nameInp.focus();return;}
-const full=name+' - '+area;
-if(addressList.includes(full)){nameInp.focus();return;}
-addressList.push(full);
-const st=stops.find(x=>x.id===parseInt(sel.dataset.id));
-if(st)st.val=full;
-drawBtn();draw('');recalc();renderStops();
-closeModal();
-};
-btns.append(cancel,save);
-modal.append(mt,nameInp,areaInp,btns);
-document.body.append(backdrop,modal);
-addBtn.onclick=e=>{e.stopPropagation();menu.classList.add('hidden');backdrop.classList.remove('hidden');modal.classList.remove('hidden');nameInp.focus();};
+addBtn.onclick=e=>{e.stopPropagation();menu.classList.add('hidden');openAddModal(sel);};
 }else{
 const search=document.createElement('input');
 search.type='text';search.placeholder='Search addresses…';
@@ -268,6 +232,52 @@ let searchRef;
 if(!isStop){searchRef=menu.querySelector('input');}
 btn.onclick=e=>{e.stopPropagation();document.querySelectorAll('.dd-menu').forEach(m=>{if(m!==menu)m.classList.add('hidden');});menu.classList.toggle('hidden');if(!menu.classList.contains('hidden')){if(searchRef){searchRef.focus();draw(searchRef.value);}drawBtn();}};
 host.appendChild(btn);host.appendChild(menu);
+}
+
+// ---- Global add-address modal (created once) ----
+const addBackdrop=document.createElement('div');
+addBackdrop.className='fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden';
+const addModal=document.createElement('div');
+addModal.className='hidden fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-51 bg-[#fdfcf9] border-[#e8ddd0] border rounded-2xl shadow-2xl p-6 w-full max-w-sm';
+const addTitle=document.createElement('h3');addTitle.className='fraunces text-lg font-semibold mb-4';addTitle.textContent='Add new address';
+const addNameInp=document.createElement('input');addNameInp.type='text';addNameInp.placeholder='Address name (e.g. Home)';
+addNameInp.className='w-full border border-[#e8ddd0] rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-1 ring-black';
+const addAreaInp=document.createElement('input');addAreaInp.type='text';addAreaInp.placeholder='Area / full address (e.g. Country Heights Kajang)';
+addAreaInp.className='w-full border border-[#e8ddd0] rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-1 ring-black';
+const addBtns=document.createElement('div');addBtns.className='flex gap-2 justify-end';
+const addCancel=document.createElement('button');addCancel.type='button';addCancel.textContent='Cancel';
+addCancel.className='px-4 py-2 rounded-lg text-sm text-stone-600 hover:bg-[#f6f1eb]';
+const addSave=document.createElement('button');addSave.type='button';addSave.textContent='Add';
+addSave.className='bg-black text-white px-4 py-2 rounded-lg text-sm';
+let addTriggerSel=null;
+const closeAddModal=()=>{addBackdrop.classList.add('hidden');addModal.classList.add('hidden');addNameInp.value='';addAreaInp.value='';addTriggerSel=null;};
+addCancel.onclick=closeAddModal;
+addBackdrop.onclick=e=>{if(e.target===addBackdrop)closeAddModal();};
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&!addBackdrop.classList.contains('hidden'))closeAddModal();});
+addSave.onclick=e=>{
+e.stopPropagation();
+const name=addNameInp.value.trim();
+const area=addAreaInp.value.trim();
+if(!name||!area){addNameInp.focus();return;}
+const full=name+' - '+area;
+if(addressList.includes(full)){addNameInp.focus();return;}
+addressList.push(full);
+if(addTriggerSel){
+const st=stops.find(x=>x.id===parseInt(addTriggerSel.dataset.id));
+if(st)st.val=full;
+}
+recalc();renderStops();
+closeAddModal();
+};
+addBtns.append(addCancel,addSave);
+addModal.append(addTitle,addNameInp,addAreaInp,addBtns);
+document.body.append(addBackdrop,addModal);
+
+function openAddModal(sel){
+addTriggerSel=sel;
+addBackdrop.classList.remove('hidden');
+addModal.classList.remove('hidden');
+addNameInp.focus();
 }
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const WEEK_DEFAULT=['Stay home','Home > Bangsar > Home','Home > Bangsar','Bangsar > Home','Home > Bangsar > Home','Home > KL > Home','Stay home'];
