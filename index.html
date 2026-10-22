@@ -198,9 +198,6 @@ const arrow=document.createElement('span');arrow.className='text-[10px] opacity-
 btn.append(label,arrow);
 const menu=document.createElement('div');
 menu.className=(dark?'bg-zinc-900 border-zinc-800 text-white':'bg-[#fdfcf9] border-[#e8ddd0] text-black')+' dd-menu hidden absolute left-0 top-full mt-2 min-w-full w-max max-w-[85vw] z-40 border rounded-2xl shadow-xl p-1.5';
-const search=document.createElement('input');
-search.type='text';search.placeholder='Search addresses…';
-search.className='w-full border border-[#e8ddd0] rounded-lg px-3 py-2 text-sm mb-2 bg-white focus:outline-none focus:ring-1 ring-black';
 const list=document.createElement('div');list.className='max-h-[260px] overflow-auto pr-1';
 let opts=[...sel.options];
 const drawBtn=()=>{const o=sel.options[sel.selectedIndex];label.textContent=o?o.text:'';};
@@ -216,36 +213,60 @@ list.appendChild(b);
 if(list.children.length===0){const e=document.createElement('div');e.className='px-3 py-2 text-xs text-stone-400';e.textContent='No matching addresses';list.appendChild(e);}
 };
 draw();
-search.addEventListener('input',ev=>draw(ev.target.value));
 if(isStop){
 const addBtn=document.createElement('button');
 addBtn.type='button';addBtn.textContent='+ Add new address';
 addBtn.className='w-full text-left rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-[#f6f1eb]';
-const addWrap=document.createElement('div');addWrap.className='hidden flex items-center gap-2';
-const ni=document.createElement('input');ni.type='text';ni.placeholder='Address name';
-ni.className='flex-1 border border-[#e8ddd0] rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 ring-black';
-const ok=document.createElement('button');ok.type='button';ok.textContent='Add';
-ok.className='bg-black text-white rounded-lg px-3 py-1.5 text-xs';
 const note=document.createElement('div');note.className='text-[10px] text-stone-400';
 note.textContent='New addresses default to ~10 km per leg until added to the distance map.';
-addWrap.append(ni,ok);
-menu.append(search,list,addBtn,addWrap,note);
-addBtn.onclick=e=>{e.stopPropagation();addBtn.classList.add('hidden');addWrap.classList.remove('hidden');ni.focus();};
-ok.onclick=e=>{
+menu.append(list,addBtn,note);
+
+// Modal popup for adding a new address
+const backdrop=document.createElement('div');
+backdrop.className='fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden';
+const modal=document.createElement('div');
+modal.className='hidden fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-51 bg-[#fdfcf9] border-[#e8ddd0] border rounded-2xl shadow-2xl p-6 w-full max-w-sm';
+const mt=document.createElement('h3');mt.className='fraunces text-lg font-semibold mb-4';mt.textContent='Add new address';
+const nameInp=document.createElement('input');nameInp.type='text';nameInp.placeholder='Address name (e.g. Home)';
+nameInp.className='w-full border border-[#e8ddd0] rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-1 ring-black';
+const areaInp=document.createElement('input');areaInp.type='text';areaInp.placeholder='Area / full address (e.g. Country Heights Kajang)';
+areaInp.className='w-full border border-[#e8ddd0] rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-1 ring-black';
+const btns=document.createElement('div');btns.className='flex gap-2 justify-end';
+const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancel';
+cancel.className='px-4 py-2 rounded-lg text-sm text-stone-600 hover:bg-[#f6f1eb]';
+const save=document.createElement('button');save.type='button';save.textContent='Add';
+save.className='bg-black text-white px-4 py-2 rounded-lg text-sm';
+const closeModal=()=>{backdrop.classList.add('hidden');modal.classList.add('hidden');modal.querySelectorAll('input').forEach(i=>i.value='');};
+cancel.onclick=closeModal;
+backdrop.onclick=e=>{if(e.target===backdrop)closeModal();};
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&!backdrop.classList.contains('hidden'))closeModal();});
+save.onclick=e=>{
 e.stopPropagation();
-const name=ni.value.trim();
-if(!name)return;
-if(addressList.includes(name)){ni.focus();return;}
-addressList.push(name);
+const name=nameInp.value.trim();
+const area=areaInp.value.trim();
+if(!name||!area){nameInp.focus();return;}
+const full=name+' - '+area;
+if(addressList.includes(full)){nameInp.focus();return;}
+addressList.push(full);
 const st=stops.find(x=>x.id===parseInt(sel.dataset.id));
-if(st)st.val=name;
-drawBtn();draw(search.value);recalc();renderStops();
+if(st)st.val=full;
+drawBtn();draw('');recalc();renderStops();
+closeModal();
 };
-ni.addEventListener('keydown',ev=>{if(ev.key==='Enter')ok.click();});
+btns.append(cancel,save);
+modal.append(mt,nameInp,areaInp,btns);
+document.body.append(backdrop,modal);
+addBtn.onclick=e=>{e.stopPropagation();menu.classList.add('hidden');backdrop.classList.remove('hidden');modal.classList.remove('hidden');nameInp.focus();};
 }else{
+const search=document.createElement('input');
+search.type='text';search.placeholder='Search addresses…';
+search.className='w-full border border-[#e8ddd0] rounded-lg px-3 py-2 text-sm mb-2 bg-white focus:outline-none focus:ring-1 ring-black';
+search.addEventListener('input',ev=>draw(ev.target.value));
 menu.append(search,list);
 }
-btn.onclick=e=>{e.stopPropagation();document.querySelectorAll('.dd-menu').forEach(m=>{if(m!==menu)m.classList.add('hidden');});menu.classList.toggle('hidden');if(!menu.classList.contains('hidden')){search.focus();draw(search.value);drawBtn();}};
+let searchRef;
+if(!isStop){searchRef=menu.querySelector('input');}
+btn.onclick=e=>{e.stopPropagation();document.querySelectorAll('.dd-menu').forEach(m=>{if(m!==menu)m.classList.add('hidden');});menu.classList.toggle('hidden');if(!menu.classList.contains('hidden')){if(searchRef){searchRef.focus();draw(searchRef.value);}drawBtn();}};
 host.appendChild(btn);host.appendChild(menu);
 }
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
