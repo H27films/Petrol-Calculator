@@ -151,6 +151,16 @@ let stops=[
 {id:1,val:'Home - Country Heights Kajang'},
 {id:2,val:'Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL'}
 ];
+const addressList = [
+  'Home - Country Heights Kajang',
+  'Nur Yadi - Lot 17 Level 2 303 Jln Ampang Desa Pahlawan 50450 KL',
+  'KLCC - Lot 241 Level 2 Menara Petronas Twin Tower 50088 KL',
+  'Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL',
+  'Midvalley Gym - Lingkaran Syed Putra Mid Valley 59200 KL',
+  'Ailing Home - Araville 22 Jln Kapas Bangsar 59100 KL',
+  'KLIA - Kuala Lumpur International Airport Sepang'
+];
+function esc(t){return t.replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));}
 const distMap={
 'Home - Country Heights Kajang|Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL':30,
 'Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL|Home - Country Heights Kajang':30,
@@ -179,24 +189,64 @@ let host=sel.parentNode;
 if(!host.classList.contains('relative')){const w=document.createElement('div');w.className='relative';host.insertBefore(w,sel);w.appendChild(sel);host=w;}
 sel.style.display='none';
 const dark=sel.hasAttribute('data-dark');
+const isStop=!!sel.dataset.id;
 const btn=document.createElement('button');
 btn.type='button';
 btn.className=dark?'inline-flex items-center gap-2 bg-zinc-800 text-white rounded-full px-3 py-1 text-xs':'w-full flex items-center justify-between gap-2 bg-[#f6f1eb] border rounded-xl p-3 text-sm text-left text-black';
+const label=document.createElement('span');label.className='truncate min-w-0';
+const arrow=document.createElement('span');arrow.className='text-[10px] opacity-60 shrink-0';arrow.textContent='▾';
+btn.append(label,arrow);
 const menu=document.createElement('div');
 menu.className=(dark?'bg-zinc-900 border-zinc-800 text-white':'bg-[#fdfcf9] border-[#e8ddd0] text-black')+' dd-menu hidden absolute left-0 top-full mt-2 min-w-full w-max max-w-[85vw] z-40 border rounded-2xl shadow-xl p-1.5';
-const draw=()=>{
-const o=sel.options[sel.selectedIndex];
-btn.innerHTML='<span class="truncate min-w-0">'+(o?o.text:'')+'</span><span class="text-[10px] opacity-60 shrink-0">▾</span>';
-menu.innerHTML='';
-[...sel.options].forEach((op,i)=>{
-const b=document.createElement('button');b.type='button';b.textContent=op.text;
-b.className='block w-full text-left rounded-xl px-3 py-2 text-sm '+(i===sel.selectedIndex?(dark?'bg-white text-black':'bg-black text-white'):(dark?'hover:bg-zinc-800':'hover:bg-[#f6f1eb]'));
-b.onclick=e=>{e.stopPropagation();sel.selectedIndex=i;sel.dispatchEvent(new Event('input',{bubbles:true}));sel.dispatchEvent(new Event('change',{bubbles:true}));menu.classList.add('hidden');draw();};
-menu.appendChild(b);
+const search=document.createElement('input');
+search.type='text';search.placeholder='Search addresses…';
+search.className='w-full border border-[#e8ddd0] rounded-lg px-3 py-2 text-sm mb-2 bg-white focus:outline-none focus:ring-1 ring-black';
+const list=document.createElement('div');list.className='max-h-[260px] overflow-auto pr-1';
+let opts=[...sel.options];
+const drawBtn=()=>{const o=sel.options[sel.selectedIndex];label.textContent=o?o.text:'';};
+const draw=(filter='')=>{
+const f=filter.toLowerCase();
+list.innerHTML='';
+opts.filter(o=>o.text.toLowerCase().includes(f)).forEach((o,i)=>{
+const b=document.createElement('button');b.type='button';b.textContent=o.text;
+b.className='block w-full text-left rounded-xl px-3 py-2 text-sm '+(o===sel.options[sel.selectedIndex]?(dark?'bg-white text-black':'bg-black text-white'):(dark?'hover:bg-zinc-800':'hover:bg-[#f6f1eb]'));
+b.onclick=e=>{e.stopPropagation();sel.selectedIndex=i;drawBtn();sel.dispatchEvent(new Event('change',{bubbles:true}));menu.classList.add('hidden');};
+list.appendChild(b);
 });
+if(list.children.length===0){const e=document.createElement('div');e.className='px-3 py-2 text-xs text-stone-400';e.textContent='No matching addresses';list.appendChild(e);}
 };
-btn.onclick=e=>{e.stopPropagation();document.querySelectorAll('.dd-menu').forEach(m=>{if(m!==menu)m.classList.add('hidden');});menu.classList.toggle('hidden');};
-host.appendChild(btn);host.appendChild(menu);draw();
+draw();
+search.addEventListener('input',ev=>draw(ev.target.value));
+if(isStop){
+const addBtn=document.createElement('button');
+addBtn.type='button';addBtn.textContent='+ Add new address';
+addBtn.className='w-full text-left rounded-lg px-3 py-2 text-sm text-stone-600 hover:bg-[#f6f1eb]';
+const addWrap=document.createElement('div');addWrap.className='hidden flex items-center gap-2';
+const ni=document.createElement('input');ni.type='text';ni.placeholder='Address name';
+ni.className='flex-1 border border-[#e8ddd0] rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 ring-black';
+const ok=document.createElement('button');ok.type='button';ok.textContent='Add';
+ok.className='bg-black text-white rounded-lg px-3 py-1.5 text-xs';
+const note=document.createElement('div');note.className='text-[10px] text-stone-400';
+note.textContent='New addresses default to ~10 km per leg until added to the distance map.';
+addWrap.append(ni,ok);
+menu.append(search,list,addBtn,addWrap,note);
+addBtn.onclick=e=>{e.stopPropagation();addBtn.classList.add('hidden');addWrap.classList.remove('hidden');ni.focus();};
+ok.onclick=e=>{
+e.stopPropagation();
+const name=ni.value.trim();
+if(!name)return;
+if(addressList.includes(name)){ni.focus();return;}
+addressList.push(name);
+const st=stops.find(x=>x.id===parseInt(sel.dataset.id));
+if(st)st.val=name;
+drawBtn();draw(search.value);recalc();renderStops();
+};
+ni.addEventListener('keydown',ev=>{if(ev.key==='Enter')ok.click();});
+}else{
+menu.append(search,list);
+}
+btn.onclick=e=>{e.stopPropagation();document.querySelectorAll('.dd-menu').forEach(m=>{if(m!==menu)m.classList.add('hidden');});menu.classList.toggle('hidden');if(!menu.classList.contains('hidden')){search.focus();draw(search.value);drawBtn();}};
+host.appendChild(btn);host.appendChild(menu);
 }
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const WEEK_DEFAULT=['Stay home','Home > Bangsar > Home','Home > Bangsar','Bangsar > Home','Home > Bangsar > Home','Home > KL > Home','Stay home'];
@@ -337,13 +387,7 @@ stops.forEach((s,i)=>{
 let d=document.createElement('div');d.className='flex gap-2 items-center';
 d.innerHTML=`<span class="w-6 h-6 bg-[#f6f1eb] rounded-full grid place-items-center text-xs">${i+1}</span>
 <div class="relative flex-1"><select data-id="${s.id}" class="sSel w-full appearance-none bg-[#f6f1eb] border rounded-xl p-3 pr-9 text-sm">
-<option ${s.val.includes('Country Heights')?'selected':''}>Home - Country Heights Kajang</option>
-<option ${s.val.includes('Nur Yadi')?'selected':''}>Nur Yadi - Lot 17 Level 2 303 Jln Ampang Desa Pahlawan 50450 KL</option>
-<option ${s.val.includes('KLCC')?'selected':''}>KLCC - Lot 241 Level 2 Menara Petronas Twin Tower 50088 KL</option>
-<option ${s.val.includes('Bangsar Village')?'selected':''}>Bangsar Village 1 - Jln Telawi 1 Bangsar 59100 KL</option>
-<option ${s.val.includes('Midvalley')?'selected':''}>Midvalley Gym - Lingkaran Syed Putra Mid Valley 59200 KL</option>
-<option ${s.val.includes('Ailing')?'selected':''}>Ailing Home - Araville 22 Jln Kapas Bangsar 59100 KL</option>
-<option ${s.val.includes('KLIA')?'selected':''}>KLIA - Kuala Lumpur International Airport Sepang</option>
+${addressList.map(a=>`<option ${s.val===a?'selected':''}>${esc(a)}</option>`).join('')}
 </select></div>
 ${stops.length>2?`<button data-r="${s.id}" class="text-stone-400">✕</button>`:''}`;
 c.appendChild(d);

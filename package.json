@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "scripts": {
-    "dev": "vercel dev"
-  },
+  "scripts": {},
   "dependencies": {
     "@neondatabase/serverless": "latest",
     "jose": "^5.9.6"
