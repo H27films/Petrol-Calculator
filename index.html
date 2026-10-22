@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Petrol Dashboard - Fixed</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#111111">
+<link rel="apple-touch-icon" href="/icons/icon-192.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
 <style>body{font-family:'Inter',sans-serif;background:#efe9e1}.fraunces{font-family:'Fraunces',serif}.soft-shadow{box-shadow:0 20px 60px rgba(0,0,0,0.08)}.no-spin::-webkit-outer-spin-button,.no-spin::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}.no-spin{-moz-appearance:textfield}.tip{opacity:0;transition:opacity .15s}.pt:hover .tip{opacity:1}#moreBody tr{background-color:#ececef!important;color:#18181b}#moreBody tr:hover{background-color:#e0e0e4!important}#moreBody tr td{border-color:#d4d4d8}</style>
@@ -516,6 +520,10 @@ buildWeek();
 buildTable();
 paintCar();
 recalc();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
 </script>
 <script>
 document.getElementById('authBar').classList.add('hidden');
